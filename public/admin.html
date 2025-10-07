@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia - Painel Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Painel Administrativo</h1>
+            <button class="btn-logout" onclick="sair()">Sair</button>
+        </div>
+
+        <div class="content">
+            <div class="filtros">
+                <input type="text" id="buscarCPF" placeholder="Buscar por CPF ou nome..." onkeyup="buscar()">
+                <button class="btn-principal" onclick="carregarAlunos()">Atualizar Lista</button>
+            </div>
+
+            <div class="estatisticas">
+                <div class="stat-card">
+                    <h3 id="totalAlunos">0</h3>
+                    <p>Total de Alunos</p>
+                </div>
+            </div>
+
+            <h2 style="margin: 30px 0 20px 0; color: #667eea;">Alunos Cadastrados</h2>
+            <div id="listaAlunos"></div>
+        </div>
+    </div>
+
+    <script>
+        async function verificarLogin() {
+            const resposta = await fetch('/api/verificar-login');
+            const dados = await resposta.json();
+            if (!dados.logado) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        window.onload = function() {
+            verificarLogin();
+            carregarAlunos();
+        };
+
+        async function carregarAlunos() {
+            try {
+                const resposta = await fetch('/api/admin/alunos');
+                const alunos = await resposta.json();
+
+                document.getElementById('totalAlunos').textContent = alunos.length;
+
+                const lista = document.getElementById('listaAlunos');
+
+                if (alunos.length === 0) {
+                    lista.innerHTML = '<div class="empty-state"><h3>Nenhum aluno cadastrado ainda</h3></div>';
+                    return;
+                }
+
+                let html = '';
+                alunos.forEach(aluno => {
+                    html += `
+                        <div class="aluno-card" data-info="${aluno.nome.toLowerCase()} ${aluno.cpf}">
+                            <div class="aluno-header">
+                                <div class="aluno-nome">${aluno.nome}</div>
+                                <button class="btn-excluir" onclick="excluir(${aluno.id})">Excluir</button>
+                            </div>
+                            <div class="aluno-info">
+                                <div class="info-item"><span class="info-label">CPF:</span> ${aluno.cpf}</div>
+                                <div class="info-item"><span class="info-label">E-mail:</span> ${aluno.email}</div>
+                                <div class="info-item"><span class="info-label">Telefone:</span> ${aluno.telefone}</div>
+                                <div class="info-item"><span class="info-label">Nascimento:</span> ${formatarData(aluno.data_nascimento)}</div>
+                                <div class="info-item"><span class="info-label">Sexo:</span> ${aluno.sexo}</div>
+                                <div class="info-item"><span class="info-label">Plano:</span> ${aluno.plano}</div>
+                                <div class="info-item"><span class="info-label">Matrícula:</span> ${formatarData(aluno.data_matricula)}</div>
+                                ${aluno.endereco ? `<div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Endereço:</span> ${aluno.endereco}</div>` : ''}
+                                ${aluno.objetivo ? `<div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Objetivo:</span> ${aluno.objetivo}</div>` : ''}
+                                ${aluno.observacoes ? `<div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Observações:</span> ${aluno.observacoes}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                lista.innerHTML = html;
+            } catch (erro) {
+                console.error('Erro:', erro);
+            }
+        }
+
+        async function excluir(id) {
+            if (confirm('Tem certeza que deseja excluir este aluno?')) {
+                await fetch(`/api/admin/alunos/${id}`, { method: 'DELETE' });
+                carregarAlunos();
+            }
+        }
+
+        async function sair() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        }
+
+        function formatarData(data) {
+            if (!data) return '';
+            const partes = data.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function buscar() {
+            const termo = document.getElementById('buscarCPF').value.toLowerCase();
+            const cards = document.querySelectorAll('.aluno-card');
+            
+            cards.forEach(card => {
+                const info = card.getAttribute('data-info');
+                card.style.display = info.includes(termo) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

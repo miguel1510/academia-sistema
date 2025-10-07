@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia - Login Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container-login">
+        <div class="card-login">
+            <h1>🔐 Painel Administrativo</h1>
+            <p>Academia Fitness</p>
+
+            <div class="form-group">
+                <label>Usuário</label>
+                <input type="text" id="usuario" placeholder="Digite seu usuário">
+            </div>
+
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="senha" placeholder="Digite sua senha">
+            </div>
+
+            <button class="btn-principal" onclick="fazerLogin()">Entrar</button>
+
+            <div id="mensagemErro" class="mensagem-erro" style="margin-top: 20px;">
+                Usuário ou senha incorretos
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fazerLogin() {
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+
+            try {
+                const resposta = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, senha })
+                });
+
+                if (resposta.ok) {
+                    window.location.href = '/admin.html';
+                } else {
+                    document.getElementById('mensagemErro').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('mensagemErro').style.display = 'none';
+                    }, 3000);
+                }
+            } catch (erro) {
+                alert('Erro ao fazer login');
+            }
+        }
+
+        document.getElementById('senha').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                fazerLogin();
+            }
+        });
+    </script>
+</body>
+</html>

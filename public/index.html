@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia - Cadastro de Alunos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Academia Fitness</h1>
+            <p>Faça seu cadastro e comece a treinar!</p>
+        </div>
+
+        <div class="content">
+            <div id="mensagemSucesso" class="mensagem-sucesso">
+                ✓ Cadastro realizado com sucesso! Bem-vindo à academia!
+            </div>
+
+            <div id="mensagemErro" class="mensagem-erro">
+                ✗ Erro ao cadastrar. Tente novamente.
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="nome" required>
+                </div>
+                <div class="form-group">
+                    <label>CPF *</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>E-mail *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Telefone *</label>
+                    <input type="tel" id="telefone" placeholder="(00) 00000-0000" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Data de Nascimento *</label>
+                    <input type="date" id="dataNascimento" required>
+                </div>
+                <div class="form-group">
+                    <label>Sexo *</label>
+                    <select id="sexo" required>
+                        <option value="">Selecione...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Endereço Completo</label>
+                <input type="text" id="endereco">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Plano *</label>
+                    <select id="plano" required>
+                        <option value="">Selecione...</option>
+                        <option value="Mensal">Mensal - R$ 89,90</option>
+                        <option value="Trimestral">Trimestral - R$ 249,90</option>
+                        <option value="Semestral">Semestral - R$ 449,90</option>
+                        <option value="Anual">Anual - R$ 799,90</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data de Matrícula *</label>
+                    <input type="date" id="dataMatricula" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Seu Objetivo</label>
+                <textarea id="objetivo" rows="3" placeholder="Ex: Emagrecimento, ganho de massa muscular, condicionamento físico..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Observações Médicas / Restrições</label>
+                <textarea id="observacoes" rows="3" placeholder="Informações importantes sobre saúde, lesões, restrições..."></textarea>
+            </div>
+
+            <button class="btn-principal" onclick="cadastrar()">Fazer Cadastro</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataMatricula').value = hoje;
+        };
+
+        async function cadastrar() {
+            const dados = {
+                nome: document.getElementById('nome').value.trim(),
+                cpf: document.getElementById('cpf').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                telefone: document.getElementById('telefone').value.trim(),
+                dataNascimento: document.getElementById('dataNascimento').value,
+                sexo: document.getElementById('sexo').value,
+                endereco: document.getElementById('endereco').value.trim(),
+                plano: document.getElementById('plano').value,
+                dataMatricula: document.getElementById('dataMatricula').value,
+                objetivo: document.getElementById('objetivo').value.trim(),
+                observacoes: document.getElementById('observacoes').value.trim()
+            };
+
+            if (!dados.nome || !dados.cpf || !dados.email || !dados.telefone || !dados.dataNascimento || !dados.sexo || !dados.plano || !dados.dataMatricula) {
+                alert('Por favor, preencha todos os campos obrigatórios (*)');
+                return;
+            }
+
+            try {
+                const resposta = await fetch('/api/alunos/cadastrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (resposta.ok) {
+                    document.getElementById('mensagemSucesso').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('mensagemSucesso').style.display = 'none';
+                    }, 5000);
+
+                    document.getElementById('nome').value = '';
+                    document.getElementById('cpf').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('telefone').value = '';
+                    document.getElementById('dataNascimento').value = '';
+                    document.getElementById('sexo').value = '';
+                    document.getElementById('endereco').value = '';
+                    document.getElementById('plano').value = '';
+                    document.getElementById('objetivo').value = '';
+                    document.getElementById('observacoes').value = '';
+                    document.getElementById('dataMatricula').value = new Date().toISOString().split('T')[0];
+                } else {
+                    document.getElementById('mensagemErro').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('mensagemErro').style.display = 'none';
+                    }, 3000);
+                }
+            } catch (erro) {
+                console.error('Erro:', erro);
+                alert('Erro ao cadastrar. Verifique sua conexão.');
+            }
+        }
+    </script>
+</body>
+</html>
